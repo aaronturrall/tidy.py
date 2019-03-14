@@ -1,0 +1,31 @@
+# folder to be watched
+watch:
+  folder: /home/aaron/Downloads
+
+# files : type
+files:
+  zip: archives
+  rar: archives
+  7z: archives
+  theme: archives
+  apk: archives
+  gz: archives
+  tar: archives
+  deb: packages
+  doc: documents
+  docx: documents
+  png: images
+  jpg: images
+  jpeg: images
+  gif: images
+  xls: documents
+  txt: documents
+
+types:
+  archives: /home/aaron/Downloads/Archives
+  documents: /home/aaron/Downloads/Documents
+  packages: /home/aaron/Downloads/Packages
+  images: /home/aaron/Downloads/Images
+
+log:
+  file: /home/aaron/
