@@ -20,7 +20,8 @@ runs the program in watcher mode.
 
 tidy.py supports command-line arguments, for details use:
 
-> python tidy.py --help 
+> python tidy.py --help
+>
 >Usage: tidy.py [OPTIONS] COMMAND [ARGS]...
 >
 >Options:
