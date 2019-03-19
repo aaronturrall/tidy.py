@@ -41,3 +41,8 @@ tidy.py supports command-line arguments, for details use:
 >
 >  watch   example: tidy watch /home/user/Downloads - Change watched...
 
+***Todo***
+[] Create an option for easy recursive scanning
+[] add ability to organise files by date
+[] create simple gui for control (pyqt?)
+
