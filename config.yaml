@@ -1,8 +1,6 @@
-# folder to be watched
 watch:
-  folder: /home/aaron/Downloads
+  folder: /home/aaron/Downloads/new
 
-# files : type
 files:
   zip: archives
   rar: archives
@@ -20,7 +18,6 @@ files:
   gif: images
   xls: documents
   txt: documents
-
 types:
   archives: /home/aaron/Downloads/Archives
   documents: /home/aaron/Downloads/Documents
@@ -29,3 +26,6 @@ types:
 
 log:
   file: /home/aaron/
+
+recursive:
+  enabled: off

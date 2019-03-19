@@ -17,6 +17,7 @@ watch = {}
 files = {}
 types = {}
 logdict = {}
+recursive = {}
 directory = ''
 
 
@@ -24,7 +25,7 @@ def read_config():
     """reads config.yaml and parses the content assigning
     dictionaries to the values"""
     yaml = YAML()
-    global config_path, watch, files, types, logdict
+    global config_path, watch, files, types, logdict, recursive
     with open(config_path, 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
         try:
@@ -32,6 +33,7 @@ def read_config():
             files = cfg['files']
             types = cfg['types']
             logdict = cfg['log']
+            recursive = cfg['recursive']
         except IndexError:
             print("No Configuration Data")
 
@@ -47,6 +49,7 @@ def save_config():
     cfg['files'] = files
     cfg['types'] = types
     cfg['log'] = logdict
+    cfg['recursive'] = recursive
     with open(config_path, 'w') as ymlfile:
         yaml.dump(cfg, ymlfile)
     read_config()
@@ -76,6 +79,14 @@ def add_value_watch(value):
     watch.update(add)
     save_config()
 
+def change_value_recursivity(value):
+    """changes the recursive dictionary to either off or on"""
+    global recursive
+    key = 'enabled'
+    add = {key: value}
+    recursive.update(add)
+    save_config()
+
 
 def add_value_logfile(value):
     """adds the specified key, value pair to the logdict dictionary"""
@@ -98,15 +109,23 @@ def remove_value_files(key):
 #  file system functions
 
 
-def check_directories():
+def check_directories(start):
     """Checks that the directories specified in the types dictionary exist
     if they dont they are created"""
-    global types
+    global types, recursive
     for value in types.values():
         if os.path.isdir(value):
             continue
         else:
             os.makedirs(value)
+    if recursive.get('enabled') == 'on':
+        subfolders = [f.path for f in os.scandir(start) if f.is_dir() ]
+        for value in types.values():
+            if value in subfolders:
+                print("Recursive mode is on, however destination directories"
+                      " are within the range of the recursive scan, Aborting!")
+                raise SystemExit(0)
+
 
 ############################################################
 # Directory watcher and Handler
@@ -124,8 +143,12 @@ class Watcher():
         defined to be the handler as we want to move created files, the program
         is currently non-recursive though this can be changed if the
         destiniation folders are not within thewatched folder"""
+        global recursive
         event_handler = Handler()
-        self.observer.schedule(event_handler, directory, recursive=False)
+        if recursive.get('enabled') == 'on':
+            self.observer.schedule(event_handler, directory, recursive=True)
+        elif recursive.get('enabled') == 'off':
+            self.observer.schedule(event_handler, directory, recursive=False)
         self.observer.start()
         try:
             while True:
@@ -180,12 +203,16 @@ def cleaner(directory):
     at program start
 
     this function also has a logging component"""
-    global files, types
+    global files, types, recursive
     log = str(logdict['file'])+'/tidypy.log'
     if not os.path.exists(log):
         open(log, 'w').close()
     for ext in files.keys():
-        listdir = sorted(Path(directory).glob(f'*.{ext}'))
+        if recursive.get('enabled') == 'off':
+            listdir = sorted(Path(directory).glob(f'*.{ext}'))
+        elif recursive.get('enabled') == 'on':
+            listdir = sorted(Path(directory).glob(f'**/*.{ext}'
+                                                  ))
         if listdir:
             for file in listdir:
                 folder = files.get(ext)
@@ -257,6 +284,16 @@ def log(logfile):
     read_config()
     add_value_logfile(logfile)
 
+@cli.command(help='example: tidy recursive on/off '
+             '- Enable/Disable recursive scanning')
+@click.argument('recursivity')
+def recursive(recursivity):
+    if recursivity != 'on' and recursivity != 'off':
+        print("only on/off permitted")
+        raise SystemExit(0)
+    read_config()
+    change_value_recursivity(recursivity)
+
 @cli.command(help='example: tidy config '
              '- Prints configuration to console')
 def config():
@@ -268,7 +305,7 @@ def config():
 def run():
     read_config()
     directory = watch["folder"]
-    check_directories()
+    check_directories(directory)
     cleaner(directory)
     w = Watcher()
     w.run(directory)
@@ -278,6 +315,7 @@ cli.add_command(add)
 cli.add_command(remove)
 cli.add_command(watch)
 cli.add_command(log)
+cli.add_command(recursive)
 cli.add_command(config)
 cli.add_command(run)
 
