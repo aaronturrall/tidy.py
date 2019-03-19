@@ -43,7 +43,7 @@ tidy.py supports command-line arguments, for details use:
 
 ***Todo***
 
-[] Create an option for easy recursive scanning
+[x] Create an option for easy recursive scanning
 
 [] add ability to organise files by date
 
