@@ -245,6 +245,7 @@ def cli():
 @click.argument('extension')
 @click.argument('type')
 def add(extension, type):
+    global directory
     read_config()
     extlist = list(extension)
     if extlist[0] == '.':
@@ -260,7 +261,7 @@ def add(extension, type):
         add_value_types(type, value)
         print("New type/folder pair added to configuration")
     add_value_files(extension, type)
-    check_directories()
+    check_directories(directory)
     print(f"Extension {extension} - {type} added to configuration")
 
 @cli.command(help='example: tidy remove txt '
